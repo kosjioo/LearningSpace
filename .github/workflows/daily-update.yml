@@ -1,0 +1,42 @@
+name: Daily Update Email with Notes
+
+on:
+  schedule:
+    - cron: '0 23 * * *'  # UTC 23点触发，北京时间次日7点
+
+jobs:
+  send-email:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Find yesterday's updated Markdown files
+        id: find_files
+        run: |
+          YESTERDAY=$(date -d "yesterday" +%Y-%m-%d)
+          echo "Yesterday was: $YESTERDAY"
+          git log --since="$YESTERDAY 00:00" --until="$YESTERDAY 23:59" --pretty=format: --name-only | grep '\.md$' | sort -u > md_files.txt
+          if [ ! -s md_files.txt ]; then
+            echo "No Markdown files updated yesterday." > body.txt
+          else
+            echo "### 昨日学习笔记\n" > body.txt
+            for file in $(cat md_files.txt); do
+              echo -e "\n\n## 文件: $file\n" >> body.txt
+              cat "$file" >> body.txt
+            done
+          fi
+
+      - name: Send email notification
+        uses: dawidd6/action-send-mail@v2
+        with:
+          server_address: smtp.office365.com
+          server_port: 587
+          username: ${{ secrets.OUTLOOK_USERNAME }}
+          password: ${{ secrets.OUTLOOK_PASSWORD }}
+          subject: ~昨日学习笔记 (自动发送)~
+          to: jiahui.a.li@outlook.com
+          from: jiahui.a.li@outlook.com
+          content_type: text/plain
+          body: |
+            $(cat body.txt)
