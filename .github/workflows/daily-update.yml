@@ -2,7 +2,8 @@ name: Daily Update Email with Notes
 
 on:
   schedule:
-    - cron: '0 23 * * *'  # UTC 23点触发，北京时间次日7点
+    - cron: '0 23 * * *'  # UTC 23点触发，北京时间7点
+  workflow_dispatch:        # 支持手动运行
 
 jobs:
   send-email:
@@ -18,9 +19,9 @@ jobs:
           echo "Yesterday was: $YESTERDAY"
           git log --since="$YESTERDAY 00:00" --until="$YESTERDAY 23:59" --pretty=format: --name-only | grep '\.md$' | sort -u > md_files.txt
           if [ ! -s md_files.txt ]; then
-            echo "No Markdown files updated yesterday." > body.txt
+            echo "昨天没有更新 Markdown 笔记。" > body.txt
           else
-            echo "### 昨日学习笔记\n" > body.txt
+            echo "📘 昨日学习笔记\n" > body.txt
             for file in $(cat md_files.txt); do
               echo -e "\n\n## 文件: $file\n" >> body.txt
               cat "$file" >> body.txt
@@ -34,7 +35,7 @@ jobs:
           server_port: 587
           username: ${{ secrets.OUTLOOK_USERNAME }}
           password: ${{ secrets.OUTLOOK_PASSWORD }}
-          subject: ~昨日学习笔记 (自动发送)~
+          subject: 📘 昨日学习笔记 (自动发送)
           to: jiahui.a.li@outlook.com
           from: jiahui.a.li@outlook.com
           content_type: text/plain
