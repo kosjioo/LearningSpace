@@ -36,8 +36,8 @@ jobs:
           username: ${{ secrets.OUTLOOK_USERNAME }}
           password: ${{ secrets.OUTLOOK_PASSWORD }}
           subject: 📘 昨日学习笔记 (自动发送)
-          to: jiahui.a.li@outlook.com
-          from: jiahui.a.li@outlook.com
+          to: 
+          from: 
           content_type: text/plain
           body: |
             $(cat body.txt)
